@@ -1,0 +1,10 @@
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;700&display=swap");
+@font-face {
+  font-family: "Source Sans Pro";
+  src: url("../fonts/SourceSansPro-Bold.woff") format("woff");
+  font-weight: 700;
+}
+@font-face {
+  font-family: "Canela";
+  src: url("../fonts/Canela-Medium.woff2") format("woff2"), url("../fonts/Canela-Medium.woff") format("woff");
+}
