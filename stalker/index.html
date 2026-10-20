@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>S.T.A.L.K.E.R. — Зона ждёт</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;600;700&family=Share+Tech+Mono&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body class="page page--loading">
+
+  <!-- Прелоадер -->
+  <div class="preloader" id="preloader">
+    <div class="preloader__icon">
+      <svg viewBox="0 0 100 100" class="preloader__svg">
+        <circle cx="50" cy="50" r="8" />
+        <path d="M50 38 L38 17 A40 40 0 0 1 62 17 Z" />
+        <path d="M60.4 56 L84.6 56 A40 40 0 0 1 72.6 76.8 Z" />
+        <path d="M39.6 56 L27.4 76.8 A40 40 0 0 1 15.4 56 Z" />
+      </svg>
+    </div>
+    <p class="preloader__text">Подключение к PDA<span class="preloader__dots"></span></p>
+    <div class="preloader__bar"><span class="preloader__progress" id="preloaderProgress"></span></div>
+  </div>
+
+  <!-- Эффекты поверх страницы -->
+  <div class="cursor" id="cursor"></div>
+  <div class="cursor-dot" id="cursorDot"></div>
+  <div class="noise"></div>
+  <div class="scanlines"></div>
+  <canvas class="particles" id="particles"></canvas>
+
+  <!-- Дозиметр -->
+  <aside class="dosimeter" id="dosimeter">
+    <span class="dosimeter__label">РАД</span>
+    <div class="dosimeter__scale"><span class="dosimeter__fill" id="dosimeterFill"></span></div>
+    <span class="dosimeter__value" id="dosimeterValue">0.00</span>
+  </aside>
+
+  <!-- Шапка -->
+  <header class="header" id="header">
+    <a href="#hero" class="header__logo">S.T.A.L.K.E.R.</a>
+    <nav class="header__nav">
+      <a href="#facts" class="header__link">Факты</a>
+      <a href="#timeline" class="header__link">Хроника</a>
+      <a href="#anomaly" class="header__link">Аномалия</a>
+      <a href="#factions" class="header__link">Группировки</a>
+    </nav>
+    <button class="header__burger" id="burger" aria-label="Меню"><span></span><span></span><span></span></button>
+  </header>
+
+  <main>
+    <!-- Hero -->
+    <section class="hero" id="hero">
+      <div class="hero__bg" data-parallax="0.3"></div>
+      <div class="hero__fog"></div>
+      <div class="hero__content">
+        <p class="hero__subtitle reveal">// Зона отчуждения ЧАЭС · 30 км</p>
+        <h1 class="hero__title glitch" data-text="S.T.A.L.K.E.R.">S.T.A.L.K.E.R.</h1>
+        <p class="hero__typing" id="typing"></p>
+        <a href="#facts" class="button hero__button reveal">
+          <span class="button__text">Войти в Зону</span>
+        </a>
+      </div>
+      <div class="hero__scroll"><span class="hero__scroll-line"></span>Скролль</div>
+    </section>
+
+    <!-- Статистика -->
+    <section class="stats">
+      <div class="stats__item reveal">
+        <span class="stats__number" data-count="2007">0</span>
+        <span class="stats__label">Год выхода «Тени Чернобыля»</span>
+      </div>
+      <div class="stats__item reveal">
+        <span class="stats__number" data-count="7">0</span>
+        <span class="stats__label">Концовок в первой части</span>
+      </div>
+      <div class="stats__item reveal">
+        <span class="stats__number" data-count="4">0</span>
+        <span class="stats__label">Игры в основной серии</span>
+      </div>
+      <div class="stats__item reveal">
+        <span class="stats__number" data-count="2600">0</span>
+        <span class="stats__label">км² — площадь реальной Зоны</span>
+      </div>
+    </section>
+
+    <!-- Факты -->
+    <section class="facts" id="facts">
+      <h2 class="section-title reveal"><span class="section-title__num">01</span>Интересные факты</h2>
+      <div class="facts__grid">
+        <article class="card reveal" data-tilt>
+          <span class="card__icon">☢</span>
+          <h3 class="card__title">Корни в литературе</h3>
+          <p class="card__text">Игра вдохновлена повестью братьев Стругацких «Пикник на обочине» и фильмом Андрея Тарковского «Сталкер» (1979). Оттуда — аномалии, артефакты и сама идея сталкеров.</p>
+        </article>
+        <article class="card reveal" data-tilt>
+          <span class="card__icon">⌛</span>
+          <h3 class="card__title">Долгострой</h3>
+          <p class="card__text">Разработку анонсировали в 2001 году, а вышла «Тень Чернобыля» только в марте 2007-го. Ранняя версия называлась «Oblivion Lost» и сильно отличалась от финальной игры.</p>
+        </article>
+        <article class="card reveal" data-tilt>
+          <span class="card__icon">📷</span>
+          <h3 class="card__title">Настоящая Зона</h3>
+          <p class="card__text">Разработчики из GSC Game World ездили в реальную Зону отчуждения и сделали тысячи фотографий. Припять, ЧАЭС и Янов в игре узнаются с первого взгляда.</p>
+        </article>
+        <article class="card reveal" data-tilt>
+          <span class="card__icon">🧠</span>
+          <h3 class="card__title">Система A-Life</h3>
+          <p class="card__text">NPC живут своей жизнью: ходят по Зоне, воюют, ищут артефакты и умирают даже тогда, когда игрок далеко. Для 2007 года это было почти революцией.</p>
+        </article>
+        <article class="card reveal" data-tilt>
+          <span class="card__icon">⚑</span>
+          <h3 class="card__title">7 концовок</h3>
+          <p class="card__text">В «Тени Чернобыля» семь финалов: пять ложных, которые выдаёт Исполнитель желаний, и две истинные. Чтобы увидеть истинную, нужно раскрыть тайну Стрелка.</p>
+        </article>
+        <article class="card reveal" data-tilt>
+          <span class="card__icon">⚙</span>
+          <h3 class="card__title">Бессмертные моды</h3>
+          <p class="card__text">Комьюнити до сих пор поддерживает игру: Anomaly, Misery, Gunslinger и сотни других модов превращают классику почти в новую игру.</p>
+        </article>
+        <article class="card reveal" data-tilt>
+          <span class="card__icon">🚀</span>
+          <h3 class="card__title">Сердце Чернобыля</h3>
+          <p class="card__text">S.T.A.L.K.E.R. 2: Heart of Chornobyl вышел 20 ноября 2024 года на Unreal Engine 5. Его доделывали в военное время, часть команды переехала в Прагу.</p>
+        </article>
+        <article class="card reveal" data-tilt>
+          <span class="card__icon">💬</span>
+          <h3 class="card__title">«Get out of here, stalker»</h3>
+          <p class="card__text">Фраза NPC из английской версии игры стала одним из самых известных мемов в игровом интернете.</p>
+        </article>
+      </div>
+    </section>
+
+    <!-- Хроника -->
+    <section class="timeline" id="timeline">
+      <h2 class="section-title reveal"><span class="section-title__num">02</span>Хроника серии</h2>
+      <div class="timeline__list">
+        <span class="timeline__progress" id="timelineProgress"></span>
+        <div class="timeline__item reveal">
+          <span class="timeline__year">2007</span>
+          <h3 class="timeline__title">Тень Чернобыля</h3>
+          <p class="timeline__text">Меченый с татуировкой «S.T.A.L.K.E.R.» и единственной записью в КПК: «Убить Стрелка».</p>
+        </div>
+        <div class="timeline__item reveal">
+          <span class="timeline__year">2008</span>
+          <h3 class="timeline__title">Чистое небо</h3>
+          <p class="timeline__text">Приквел о наёмнике Шраме, войны группировок и Выбросы.</p>
+        </div>
+        <div class="timeline__item reveal">
+          <span class="timeline__year">2009</span>
+          <h3 class="timeline__title">Зов Припяти</h3>
+          <p class="timeline__text">Майор СБУ Дегтярёв расследует крушение вертолётов. Многие считают эту часть лучшей в трилогии.</p>
+        </div>
+        <div class="timeline__item reveal">
+          <span class="timeline__year">2024</span>
+          <h3 class="timeline__title">Heart of Chornobyl</h3>
+          <p class="timeline__text">Возвращение в Зону спустя 15 лет. Огромный бесшовный открытый мир.</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Интерактивная аномалия -->
+    <section class="anomaly" id="anomaly">
+      <h2 class="section-title reveal"><span class="section-title__num">03</span>Найди артефакт</h2>
+      <p class="anomaly__hint reveal">Води фонариком по темноте. Где-то там прячется артефакт.</p>
+      <div class="anomaly__field" id="anomalyField">
+        <div class="anomaly__dark" id="anomalyDark"></div>
+        <button class="anomaly__artifact" id="artifact" aria-label="Артефакт"></button>
+        <div class="anomaly__found" id="anomalyFound">
+          <h3 class="anomaly__found-title">Артефакт «Медуза» найден!</h3>
+          <p class="anomaly__found-text">+500 RU · Бармен будет доволен</p>
+        </div>
+      </div>
+    </section>
+
+    <!-- Группировки -->
+    <section class="factions" id="factions">
+      <h2 class="section-title reveal"><span class="section-title__num">04</span>Группировки</h2>
+      <div class="factions__tabs">
+        <button class="factions__tab factions__tab--active" data-faction="0">Долг</button>
+        <button class="factions__tab" data-faction="1">Свобода</button>
+        <button class="factions__tab" data-faction="2">Монолит</button>
+        <button class="factions__tab" data-faction="3">Бандиты</button>
+      </div>
+      <div class="factions__panel" id="factionPanel">
+        <h3 class="factions__name" id="factionName">Долг</h3>
+        <p class="factions__desc" id="factionDesc"></p>
+      </div>
+    </section>
+
+    <!-- Цитата -->
+    <section class="quote">
+      <blockquote class="quote__text reveal">«Счастье для всех, даром, и пусть никто не уйдёт обиженный!»</blockquote>
+      <cite class="quote__author reveal">— А. и Б. Стругацкие, «Пикник на обочине»</cite>
+    </section>
+  </main>
+
+  <footer class="footer">
+    <p class="footer__text">Фан-сайт · S.T.A.L.K.E.R. — торговая марка GSC Game World</p>
+    <p class="footer__text footer__text--dim">Удачной охоты, сталкер.</p>
+  </footer>
+
+  <script src="js/main.js"></script>
+</body>
+</html>

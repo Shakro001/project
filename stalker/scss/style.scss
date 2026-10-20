@@ -1,0 +1,692 @@
+// ===== Переменные =====
+$c-bg: #0b0c08;
+$c-bg-2: #13150e;
+$c-acid: #c6e014;
+$c-rust: #b5541c;
+$c-text: #d8d6c4;
+$c-dim: #7a7a68;
+$f-head: 'Oswald', sans-serif;
+$f-mono: 'Share Tech Mono', monospace;
+$ease: cubic-bezier(.22, 1, .36, 1);
+
+// ===== Миксины =====
+@mixin mobile {
+  @media (max-width: 768px) { @content; }
+}
+
+@mixin glow($color: $c-acid) {
+  text-shadow: 0 0 8px rgba($color, .6), 0 0 24px rgba($color, .3);
+}
+
+@mixin overlay {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+}
+
+// ===== База =====
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { scroll-behavior: smooth; }
+
+.page {
+  background: $c-bg;
+  color: $c-text;
+  font-family: $f-mono;
+  line-height: 1.6;
+  overflow-x: hidden;
+  cursor: none;
+
+  &--loading { overflow: hidden; }
+
+  @include mobile { cursor: auto; }
+}
+
+a, button { cursor: none; @include mobile { cursor: pointer; } }
+
+::selection { background: $c-acid; color: $c-bg; }
+
+// ===== Прелоадер =====
+.preloader {
+  position: fixed;
+  inset: 0;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 24px;
+  background: $c-bg;
+  transition: opacity .8s $ease, visibility .8s;
+
+  &--hidden { opacity: 0; visibility: hidden; }
+
+  &__svg {
+    width: 90px;
+    fill: $c-acid;
+    animation: spin 3s linear infinite;
+    filter: drop-shadow(0 0 12px rgba($c-acid, .7));
+  }
+
+  &__text { color: $c-acid; letter-spacing: .2em; text-transform: uppercase; }
+
+  &__dots::after { content: ''; animation: dots 1.2s steps(4) infinite; }
+
+  &__bar { width: 240px; height: 2px; background: rgba($c-acid, .15); }
+
+  &__progress {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: $c-acid;
+    box-shadow: 0 0 10px $c-acid;
+    transition: width .2s;
+  }
+}
+
+// ===== Курсор =====
+.cursor, .cursor-dot {
+  position: fixed;
+  top: 0;
+  left: 0;
+  z-index: 999;
+  pointer-events: none;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  @include mobile { display: none; }
+}
+
+.cursor {
+  width: 40px;
+  height: 40px;
+  border: 1px solid rgba($c-acid, .6);
+  transition: width .3s $ease, height .3s $ease, background .3s;
+
+  &--hover { width: 70px; height: 70px; background: rgba($c-acid, .1); }
+}
+
+.cursor-dot { width: 6px; height: 6px; background: $c-acid; }
+
+// ===== Оверлеи =====
+.noise {
+  @include overlay;
+  z-index: 900;
+  opacity: .06;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='3'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  animation: noise .4s steps(3) infinite;
+}
+
+.scanlines {
+  @include overlay;
+  z-index: 901;
+  background: repeating-linear-gradient(0deg, rgba(0, 0, 0, .15) 0 1px, transparent 1px 3px);
+}
+
+.particles {
+  @include overlay;
+  z-index: 1;
+}
+
+// ===== Дозиметр =====
+.dosimeter {
+  position: fixed;
+  right: 24px;
+  bottom: 24px;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 14px;
+  border: 1px solid rgba($c-acid, .3);
+  background: rgba($c-bg, .85);
+  backdrop-filter: blur(6px);
+  font-size: 12px;
+
+  &__label { color: $c-rust; }
+
+  &__scale { width: 80px; height: 6px; background: rgba($c-acid, .1); }
+
+  &__fill {
+    display: block;
+    width: 0;
+    height: 100%;
+    background: linear-gradient(90deg, $c-acid, $c-rust);
+  }
+
+  &__value { min-width: 36px; color: $c-acid; }
+
+  &--danger { animation: shake .15s infinite; border-color: $c-rust; }
+}
+
+// ===== Шапка =====
+.header {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 24px 48px;
+  transition: padding .4s $ease, background .4s;
+
+  &--scrolled {
+    padding: 14px 48px;
+    background: rgba($c-bg, .85);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid rgba($c-acid, .15);
+  }
+
+  &__logo {
+    font-family: $f-head;
+    font-size: 22px;
+    font-weight: 700;
+    color: $c-acid;
+    text-decoration: none;
+    letter-spacing: .1em;
+    @include glow;
+  }
+
+  &__nav { display: flex; gap: 36px; }
+
+  &__link {
+    position: relative;
+    color: $c-text;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-size: 14px;
+    letter-spacing: .15em;
+
+    &::after {
+      content: '';
+      position: absolute;
+      left: 0;
+      bottom: -4px;
+      width: 100%;
+      height: 1px;
+      background: $c-acid;
+      transform: scaleX(0);
+      transform-origin: right;
+      transition: transform .4s $ease;
+    }
+
+    &:hover { color: $c-acid; }
+
+    &:hover::after { transform: scaleX(1); transform-origin: left; }
+  }
+
+  &__burger {
+    display: none;
+    flex-direction: column;
+    gap: 5px;
+    position: relative;
+    z-index: 2;
+    background: none;
+    border: none;
+
+    span { width: 26px; height: 2px; background: $c-acid; transition: transform .3s; }
+  }
+
+  @include mobile {
+    padding: 16px;
+    &--scrolled { padding: 12px 16px; }
+
+    &__burger { display: flex; }
+
+    &__nav {
+      position: fixed;
+      inset: 0;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      background: rgba($c-bg, .97);
+      transform: translateX(100%);
+      transition: transform .5s $ease;
+    }
+
+    &--open &__nav { transform: none; }
+
+    &__link { font-size: 22px; }
+  }
+}
+
+// ===== Hero =====
+.hero {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  overflow: hidden;
+  text-align: center;
+
+  &__bg {
+    position: absolute;
+    inset: -10%;
+    background:
+      radial-gradient(ellipse at 50% 120%, rgba($c-rust, .35), transparent 60%),
+      radial-gradient(circle at 70% 30%, rgba($c-acid, .12), transparent 40%),
+      linear-gradient(180deg, #1a1c12, $c-bg);
+  }
+
+  &__fog {
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(ellipse at center, transparent 30%, $c-bg 80%);
+    animation: fog 8s ease-in-out infinite alternate;
+  }
+
+  &__content { position: relative; z-index: 2; padding: 0 16px; }
+
+  &__subtitle { color: $c-rust; letter-spacing: .3em; margin-bottom: 16px; }
+
+  &__title {
+    font-family: $f-head;
+    font-size: clamp(48px, 12vw, 160px);
+    font-weight: 700;
+    line-height: 1;
+    color: $c-acid;
+    @include glow;
+  }
+
+  &__typing {
+    min-height: 1.6em;
+    margin: 24px 0 40px;
+    font-size: clamp(14px, 2vw, 20px);
+
+    &::after { content: '_'; color: $c-acid; animation: blink 1s steps(1) infinite; }
+  }
+
+  &__scroll {
+    position: absolute;
+    bottom: 32px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    color: $c-dim;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .2em;
+  }
+
+  &__scroll-line {
+    width: 1px;
+    height: 50px;
+    background: linear-gradient($c-acid, transparent);
+    animation: scrollLine 2s $ease infinite;
+  }
+}
+
+// ===== Glitch =====
+.glitch {
+  position: relative;
+
+  &::before, &::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+  }
+
+  &::before {
+    color: $c-rust;
+    animation: glitch1 3s infinite;
+    clip-path: polygon(0 0, 100% 0, 100% 35%, 0 35%);
+  }
+
+  &::after {
+    color: #4ff;
+    opacity: .6;
+    animation: glitch2 2.5s infinite;
+    clip-path: polygon(0 65%, 100% 65%, 100% 100%, 0 100%);
+  }
+}
+
+// ===== Кнопка =====
+.button {
+  position: relative;
+  display: inline-block;
+  padding: 16px 44px;
+  border: 1px solid $c-acid;
+  color: $c-acid;
+  text-decoration: none;
+  text-transform: uppercase;
+  letter-spacing: .2em;
+  overflow: hidden;
+  clip-path: polygon(12px 0, 100% 0, 100% calc(100% - 12px), calc(100% - 12px) 100%, 0 100%, 0 12px);
+  transition: color .4s;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: $c-acid;
+    transform: translateY(101%);
+    transition: transform .4s $ease;
+  }
+
+  &__text { position: relative; }
+
+  &:hover { color: $c-bg; }
+
+  &:hover::before { transform: none; }
+}
+
+// ===== Заголовок секции =====
+.section-title {
+  display: flex;
+  align-items: baseline;
+  gap: 16px;
+  margin-bottom: 56px;
+  font-family: $f-head;
+  font-size: clamp(32px, 5vw, 60px);
+  text-transform: uppercase;
+
+  &__num { font-family: $f-mono; font-size: 16px; color: $c-acid; }
+}
+
+// ===== Секции =====
+.stats, .facts, .timeline, .anomaly, .factions, .quote {
+  position: relative;
+  z-index: 2;
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 120px 48px;
+  @include mobile { padding: 80px 16px; }
+}
+
+// ===== Статистика =====
+.stats {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 24px;
+  padding-top: 80px;
+  padding-bottom: 40px;
+  @include mobile { grid-template-columns: repeat(2, 1fr); }
+
+  &__item { border-left: 2px solid $c-acid; padding-left: 16px; }
+
+  &__number {
+    display: block;
+    font-family: $f-head;
+    font-size: clamp(36px, 5vw, 56px);
+    color: $c-acid;
+  }
+
+  &__label { font-size: 13px; color: $c-dim; }
+}
+
+// ===== Карточки =====
+.facts__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+  gap: 24px;
+}
+
+.card {
+  position: relative;
+  padding: 32px 28px;
+  background: linear-gradient(145deg, $c-bg-2, $c-bg);
+  border: 1px solid rgba($c-acid, .12);
+  transform-style: preserve-3d;
+  transition: transform .2s ease-out, border-color .3s;
+
+  &::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(400px circle at var(--x, 50%) var(--y, 50%), rgba($c-acid, .12), transparent 40%);
+    opacity: 0;
+    transition: opacity .3s;
+  }
+
+  &:hover { border-color: rgba($c-acid, .5); }
+
+  &:hover::before { opacity: 1; }
+
+  &__icon {
+    display: block;
+    margin-bottom: 16px;
+    font-size: 32px;
+    transform: translateZ(40px);
+  }
+
+  &__title {
+    margin-bottom: 12px;
+    font-family: $f-head;
+    font-size: 22px;
+    color: $c-acid;
+    text-transform: uppercase;
+    transform: translateZ(30px);
+  }
+
+  &__text { font-size: 14px; color: $c-text; transform: translateZ(20px); }
+}
+
+// ===== Хроника =====
+.timeline__list {
+  position: relative;
+  padding-left: 48px;
+  border-left: 1px solid rgba($c-acid, .15);
+}
+
+.timeline__progress {
+  position: absolute;
+  top: 0;
+  left: -1px;
+  width: 2px;
+  height: 0;
+  background: $c-acid;
+  box-shadow: 0 0 12px $c-acid;
+}
+
+.timeline__item {
+  position: relative;
+  margin-bottom: 64px;
+
+  &::before {
+    content: '';
+    position: absolute;
+    left: -55px;
+    top: 10px;
+    width: 12px;
+    height: 12px;
+    background: $c-bg;
+    border: 2px solid $c-acid;
+    transform: rotate(45deg);
+  }
+}
+
+.timeline__year { font-family: $f-head; font-size: 48px; color: rgba($c-acid, .25); line-height: 1; }
+
+.timeline__title { font-family: $f-head; font-size: 28px; text-transform: uppercase; }
+
+.timeline__text { max-width: 560px; color: $c-dim; }
+
+// ===== Аномалия =====
+.anomaly {
+  &__hint { margin: -32px 0 32px; color: $c-dim; }
+
+  &__field {
+    position: relative;
+    height: 480px;
+    overflow: hidden;
+    border: 1px solid rgba($c-acid, .2);
+    background:
+      repeating-linear-gradient(45deg, rgba($c-rust, .08) 0 2px, transparent 2px 24px),
+      radial-gradient(circle at 30% 60%, #2a2d1a, $c-bg 70%);
+    @include mobile { height: 360px; }
+  }
+
+  &__dark {
+    position: absolute;
+    inset: 0;
+    z-index: 2;
+    pointer-events: none;
+    background: radial-gradient(circle 120px at var(--fx, -500px) var(--fy, -500px), transparent 0, rgba(0, 0, 0, .97) 100%);
+  }
+
+  &__artifact {
+    position: absolute;
+    z-index: 1;
+    width: 40px;
+    height: 40px;
+    border: none;
+    border-radius: 50%;
+    background: radial-gradient(circle, #fff, $c-acid 40%, transparent 70%);
+    box-shadow: 0 0 30px $c-acid, 0 0 60px rgba($c-acid, .5);
+    animation: pulse 1.5s ease-in-out infinite;
+  }
+
+  &__found {
+    position: absolute;
+    inset: 0;
+    z-index: 3;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    background: rgba($c-bg, .9);
+    opacity: 0;
+    visibility: hidden;
+    transform: scale(1.1);
+    transition: all .6s $ease;
+
+    &--visible { opacity: 1; visibility: visible; transform: none; }
+  }
+
+  &__found-title { font-family: $f-head; font-size: 32px; color: $c-acid; @include glow; text-align: center; }
+
+  &__found-text { color: $c-dim; }
+}
+
+// ===== Группировки =====
+.factions {
+  &__tabs { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 32px; }
+
+  &__tab {
+    padding: 12px 28px;
+    background: transparent;
+    border: 1px solid rgba($c-acid, .3);
+    color: $c-text;
+    font-family: $f-mono;
+    text-transform: uppercase;
+    letter-spacing: .1em;
+    transition: all .3s;
+
+    &:hover { border-color: $c-acid; }
+
+    &--active { background: $c-acid; color: $c-bg; border-color: $c-acid; }
+  }
+
+  &__panel {
+    min-height: 180px;
+    padding: 40px;
+    border: 1px solid rgba($c-acid, .15);
+    background: $c-bg-2;
+    @include mobile { padding: 24px; }
+
+    &--switch { animation: panelIn .5s $ease; }
+  }
+
+  &__name { margin-bottom: 12px; font-family: $f-head; font-size: 36px; color: $c-acid; text-transform: uppercase; }
+
+  &__desc { max-width: 700px; }
+}
+
+// ===== Цитата =====
+.quote {
+  text-align: center;
+
+  &__text {
+    font-family: $f-head;
+    font-size: clamp(24px, 4vw, 44px);
+    line-height: 1.3;
+    color: $c-acid;
+    @include glow;
+  }
+
+  &__author { display: block; margin-top: 24px; color: $c-dim; font-style: normal; }
+}
+
+// ===== Подвал =====
+.footer {
+  position: relative;
+  z-index: 2;
+  padding: 40px 16px;
+  border-top: 1px solid rgba($c-acid, .1);
+  text-align: center;
+  font-size: 13px;
+
+  &__text--dim { color: $c-dim; }
+}
+
+// ===== Появление при скролле =====
+.reveal {
+  opacity: 0;
+  transform: translateY(50px);
+  transition: opacity 1s $ease, transform 1s $ease;
+
+  &--visible { opacity: 1; transform: none; }
+}
+
+// ===== Анимации =====
+@keyframes spin { to { transform: rotate(360deg); } }
+
+@keyframes dots {
+  0% { content: ''; }
+  25% { content: '.'; }
+  50% { content: '..'; }
+  75% { content: '...'; }
+}
+
+@keyframes noise {
+  0% { transform: translate(0, 0); }
+  33% { transform: translate(-5%, 3%); }
+  66% { transform: translate(4%, -4%); }
+}
+
+@keyframes blink { 50% { opacity: 0; } }
+
+@keyframes fog { to { transform: scale(1.15); } }
+
+@keyframes scrollLine {
+  0% { transform: scaleY(0); transform-origin: top; }
+  50% { transform: scaleY(1); transform-origin: top; }
+  51% { transform-origin: bottom; }
+  100% { transform: scaleY(0); transform-origin: bottom; }
+}
+
+@keyframes glitch1 {
+  0%, 90%, 100% { transform: none; }
+  92% { transform: translate(-6px, 2px); }
+  94% { transform: translate(6px, -2px); }
+  96% { transform: translate(-3px, 0); }
+}
+
+@keyframes glitch2 {
+  0%, 88%, 100% { transform: none; }
+  90% { transform: translate(5px, -1px); }
+  93% { transform: translate(-5px, 2px); }
+}
+
+@keyframes pulse {
+  50% { transform: scale(1.3); filter: brightness(1.4); }
+}
+
+@keyframes shake {
+  25% { transform: translate(1px, -1px); }
+  75% { transform: translate(-1px, 1px); }
+}
+
+@keyframes panelIn {
+  from { opacity: 0; transform: translateX(-30px); filter: blur(4px); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation: none !important; transition: none !important; }
+  .reveal { opacity: 1; transform: none; }
+}
