@@ -1,1 +1,0 @@
-"""LifeOrbital Python backend package."""
