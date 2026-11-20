@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Verben mit Präpositionen</title>
+<style>
+  :root {
+    --bg: #f3f4f6; --surface: #ffffff; --surface2: #f9fafb; --text: #1f2937; --muted: #6b7280;
+    --border: #e5e7eb; --border2: #d1d5db; --accent: #2563eb; --accent-text: #ffffff;
+    --ok: #16a34a; --ok-bg: #dcfce7; --bad: #dc2626; --bad-bg: #fee2e2;
+    --header: #1f2937; --header-btn: #374151; --shadow: 0 2px 8px rgba(0,0,0,.08);
+  }
+  :root[data-theme="dark"] {
+    --bg: #0f172a; --surface: #1e293b; --surface2: #172033; --text: #e5e7eb; --muted: #94a3b8;
+    --border: #334155; --border2: #475569; --accent: #3b82f6; --accent-text: #ffffff;
+    --ok: #22c55e; --ok-bg: #14532d; --bad: #f87171; --bad-bg: #7f1d1d;
+    --header: #020617; --header-btn: #1e293b; --shadow: 0 2px 8px rgba(0,0,0,.4);
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: system-ui, sans-serif; background: var(--bg); color: var(--text); transition: background .2s, color .2s; }
+  button, input, select { font-family: inherit; color: inherit; }
+
+  /* ---------- header ---------- */
+  header { background: var(--header); color: #fff; padding: 10px 16px; display: flex; gap: 10px; align-items: center; flex-wrap: wrap; position: sticky; top: 0; z-index: 10; }
+  header h1 { font-size: 18px; margin: 0; flex: 1; white-space: nowrap; }
+  header .nav, header .tools { display: flex; gap: 6px; }
+  header button { background: var(--header-btn); color: #fff; border: 0; padding: 7px 12px; border-radius: 6px; cursor: pointer; font-size: 14px; }
+  header button:hover { filter: brightness(1.25); }
+  header button.active { background: var(--accent); }
+  header .seg { display: flex; border-radius: 6px; overflow: hidden; }
+  header .seg button { border-radius: 0; padding: 7px 10px; }
+  header .icon { font-size: 16px; padding: 6px 10px; }
+
+  main { max-width: 760px; margin: 20px auto; padding: 0 12px 40px; }
+  .card { background: var(--surface); border-radius: 12px; padding: 24px; box-shadow: var(--shadow); }
+  .type { font-size: 12px; text-transform: uppercase; color: var(--muted); letter-spacing: .05em; }
+  .q { font-size: 22px; margin: 12px 0 20px; line-height: 1.4; }
+  .hint { color: var(--muted); font-size: 15px; margin-top: -12px; margin-bottom: 16px; }
+  .gap { display: inline-block; min-width: 60px; border-bottom: 2px solid var(--accent); text-align: center; color: var(--accent); }
+  .opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .opts button { font-size: 18px; padding: 14px; border: 2px solid var(--border2); background: var(--surface); border-radius: 8px; cursor: pointer; }
+  .opts button:hover:not(:disabled) { border-color: var(--accent); }
+  .opts button.ok { background: var(--ok-bg); border-color: var(--ok); }
+  .opts button.bad { background: var(--bad-bg); border-color: var(--bad); }
+  input[type=text], input[type=search], select { width: 100%; font-size: 16px; padding: 10px 12px; border: 2px solid var(--border2); border-radius: 8px; background: var(--surface); }
+  input:focus, select:focus { outline: none; border-color: var(--accent); }
+  #inp { font-size: 20px; padding: 12px; }
+  input.ok { border-color: var(--ok); background: var(--ok-bg); }
+  input.bad { border-color: var(--bad); background: var(--bad-bg); }
+  .fb { margin-top: 16px; padding: 12px; border-radius: 8px; display: none; line-height: 1.5; }
+  .fb.ok { display: block; background: var(--ok-bg); }
+  .fb.bad { display: block; background: var(--bad-bg); }
+  .next { margin-top: 16px; width: 100%; padding: 14px; font-size: 18px; background: var(--accent); color: var(--accent-text); border: 0; border-radius: 8px; cursor: pointer; display: none; }
+  .stats { display: flex; justify-content: space-between; color: var(--muted); font-size: 14px; margin-bottom: 10px; gap: 8px; flex-wrap: wrap; }
+  .key { font-size: 12px; color: var(--muted); margin-top: 12px; text-align: center; }
+  .empty { text-align: center; color: var(--muted); padding: 30px 10px; }
+
+  /* ---------- list ---------- */
+  .toolbar { display: flex; gap: 8px; margin-bottom: 12px; flex-wrap: wrap; align-items: center; }
+  .toolbar input { flex: 1; min-width: 160px; }
+  .btn { background: var(--surface); border: 1px solid var(--border2); padding: 9px 14px; border-radius: 8px; cursor: pointer; font-size: 14px; }
+  .btn:hover { border-color: var(--accent); }
+  .btn.primary { background: var(--accent); color: var(--accent-text); border-color: var(--accent); font-weight: 600; }
+  .btn.danger { color: var(--bad); }
+  .plus { font-size: 22px; line-height: 1; padding: 6px 14px; }
+  .words { background: var(--surface); border-radius: 12px; box-shadow: var(--shadow); overflow: hidden; }
+  .row { display: grid; grid-template-columns: 28px 1fr auto auto; gap: 10px; padding: 12px; border-bottom: 1px solid var(--border); align-items: start; }
+  .row:last-child { border-bottom: 0; }
+  .row.off { opacity: .45; }
+  .row input[type=checkbox] { width: 18px; height: 18px; margin-top: 3px; accent-color: var(--accent); cursor: pointer; }
+  .row .w { font-weight: 700; }
+  .row .tr { margin-top: 2px; }
+  .row .ex { color: var(--muted); font-size: 13px; margin-top: 4px; font-style: italic; }
+  .row .ex b { color: var(--text); font-style: normal; }
+  .row .acts { display: flex; gap: 4px; }
+  .row .acts button { background: none; border: 1px solid transparent; border-radius: 6px; cursor: pointer; padding: 4px 7px; font-size: 15px; }
+  .row .acts button:hover { border-color: var(--border2); background: var(--surface2); }
+  .lvl { display: inline-block; width: 60px; height: 8px; background: var(--border); border-radius: 4px; overflow: hidden; }
+  .lvl i { display: block; height: 100%; background: var(--ok); }
+  .prog { text-align: center; font-size: 12px; color: var(--muted); }
+  .footer-acts { display: flex; gap: 8px; justify-content: center; flex-wrap: wrap; margin-top: 16px; }
+  .count { color: var(--muted); font-size: 14px; }
+
+  /* ---------- modal ---------- */
+  dialog { border: 0; border-radius: 14px; padding: 0; width: min(520px, calc(100vw - 32px)); background: var(--surface); color: var(--text); box-shadow: 0 10px 40px rgba(0,0,0,.35); }
+  dialog::backdrop { background: rgba(0,0,0,.5); }
+  dialog form { padding: 22px; display: grid; gap: 12px; }
+  dialog h2 { margin: 0 0 4px; font-size: 20px; }
+  dialog label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+  dialog .two { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  dialog .help { font-size: 12px; color: var(--muted); }
+  dialog .err { color: var(--bad); font-size: 13px; min-height: 1em; }
+  dialog .acts { display: flex; gap: 8px; justify-content: flex-end; }
+
+  @media (max-width: 560px) {
+    header h1 { flex-basis: 100%; }
+    .opts { grid-template-columns: 1fr; }
+    .row { grid-template-columns: 24px 1fr auto; }
+    .row .prog { display: none; }
+    .q { font-size: 19px; }
+    .card { padding: 18px; }
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1>🇩🇪 Verben + Präpositionen</h1>
+  <div class="nav">
+    <button id="btnTrain" class="active" data-i18n="train"></button>
+    <button id="btnList" data-i18n="list"></button>
+  </div>
+  <div class="tools">
+    <div class="seg">
+      <button id="langRu">RU</button>
+      <button id="langEn">EN</button>
+    </div>
+    <button id="themeBtn" class="icon" title="Theme"></button>
+  </div>
+</header>
+<main id="app"></main>
+
+<dialog id="dlg">
+  <form id="form" method="dialog">
+    <h2 id="dlgTitle"></h2>
+    <div class="two">
+      <label><span data-i18n="fVerb"></span><input type="text" name="verb" placeholder="sich freuen" required></label>
+      <label><span data-i18n="fPrep"></span><input type="text" name="prep" list="prepList" placeholder="auf" required></label>
+    </div>
+    <label><span data-i18n="fCase"></span>
+      <select name="cas">
+        <option value="A">Akkusativ</option>
+        <option value="D">Dativ</option>
+      </select>
+    </label>
+    <label><span data-i18n="fRu"></span><input type="text" name="ru"></label>
+    <label><span data-i18n="fEn"></span><input type="text" name="en"></label>
+    <label><span data-i18n="fSent"></span><input type="text" name="sent" placeholder="Ich freue mich [auf] das Wochenende."></label>
+    <div class="help" data-i18n="sentHelp"></div>
+    <div class="err" id="formErr"></div>
+    <div class="acts">
+      <button type="button" class="btn" id="dlgCancel" data-i18n="cancel"></button>
+      <button type="submit" class="btn primary" data-i18n="save"></button>
+    </div>
+  </form>
+</dialog>
+<datalist id="prepList"></datalist>
+<input type="file" id="importFile" accept=".json,application/json" hidden>
+
+<script>
+// ================= Слова по умолчанию =================
+// [глагол, предлог, падеж, RU, EN, предложение с [пропуском], активно?]
+const DEFAULT_RAW = [
+["sich freuen","auf","A","радоваться (предстоящему)","to look forward to","Ich freue mich heute schon [auf] das Weihnachtsfest.",false],
+["sich freuen","über","A","радоваться (тому, что есть)","to be happy about","Rachel freut sich sehr [über] das gute Prüfungsergebnis.",false],
+["sich fürchten","vor","D","бояться (кого/чего)","to be afraid of","Du brauchst dich [vor] dem Hund nicht zu fürchten.",true],
+["gehören","zu","D","относиться к, входить в","to belong to, to be part of","Spinnen gehören nicht [zu] den Insekten.",false],
+["sich gewöhnen","an","A","привыкать к","to get used to","Hast du dich [an] das Leben im Ausland gewöhnt?",true],
+["glauben","an","A","верить в","to believe in","In Europa glauben immer weniger Menschen [an] Gott.",false],
+["gratulieren","zu","D","поздравлять с","to congratulate on","Lieber Opa, wir gratulieren dir ganz herzlich [zum] 70. Geburtstag!",false],
+["halten","für","A","считать (кем/чем), воспринимать как","to consider, to take for","Ich halte meinen Chef [für] einen sehr netten Menschen.",true],
+["halten","von","D","быть какого-то мнения о","to think of (opinion)","Was hältst du [von] diesem Vorschlag? – Nichts! (oder: Viel!)",true],
+["sich halten","an","A","придерживаться, соблюдать","to stick to, to follow","Er hält sich nie [an] die Regeln!",true],
+["handeln","mit","D","торговать (чем)","to trade in, to deal in","Der Online-Shop handelt [mit] Gebrauchsartikeln und Büchern.",true],
+["hoffen","auf","A","надеяться на","to hope for","Wir hoffen [auf] gutes Wetter und wenig Verkehr.",true],
+["informieren","über","A","информировать о","to inform about","Bitte informieren Sie sich im Internet [über] unsere Angebote.",true],
+["sich interessieren","für","A","интересоваться (чем)","to be interested in","Meine Frau interessiert sich überhaupt nicht [für] Fußball.",false],
+["sich irren","in","D","ошибиться в, перепутать","to be mistaken about","Der Briefträger hat sich [in] der Adresse geirrt.",true],
+["kämpfen","für","A","бороться за","to fight for","Die Frauen kämpfen [für] die Gleichberechtigung.",true],
+["kämpfen","gegen","A","бороться против","to fight against","Die Südafrikaner haben erfolgreich [gegen] die Rassentrennung gekämpft.",true],
+["klagen","über","A","жаловаться на","to complain about","Meine Schwiegermutter klagt immer [über] starke Migräne.",true],
+["sich konzentrieren","auf","A","сосредоточиться на","to concentrate on","Konzentrieren Sie sich gut [auf] die Aufgaben!",true],
+["sich kümmern","um","A","заботиться о, заниматься","to take care of","Tut mir leid, ich kann mich heute nicht [um] die Kinder kümmern.",false],
+["lachen","über","A","смеяться над","to laugh at/about","Ich muss immer [über] den neuen Professor lachen; er ist so lustig.",true],
+["leiden","an","D","страдать (болезнью)","to suffer from (illness)","Frau Schmidt leidet [an] einer schweren Erkältung.",true],
+["leiden","unter","D","страдать от (обстоятельств)","to suffer from (conditions)","In Südeuropa leide ich meistens [unter] der Hitze.",true],
+["liegen","an","D","быть причиной, зависеть от","to be due to","Die Kopfschmerzen liegen [an] einer schweren Erkältung.",true],
+["nachdenken","über","A","размышлять о","to think about, to reflect on","Peter denkt oft [über] sein Leben nach, und er ist nicht zufrieden …",false],
+["protestieren","gegen","A","протестовать против","to protest against","Die Studenten protestieren [gegen] die (zu) schwierige Prüfung.",false],
+["rechnen","mit","D","рассчитывать на, ожидать","to expect, to count on","Verehrte Fahrgäste, wir rechnen [mit] unserer Ankunft in etwa einer Stunde.",true],
+["riechen","nach","D","пахнуть (чем)","to smell of","In der Küche riecht es [nach] frischem Kaffee.",true],
+["schmecken","nach","D","иметь вкус (чего)","to taste of","Dieser Auflauf schmeckt vor allem [nach] Knoblauch.",true],
+["schreiben","an","A","писать (кому)","to write to","Ich schreibe gerade einen Brief [an] das Finanzamt.",false],
+["schreiben","über","A","писать о","to write about","Schreiben Sie einen Text [über] das Thema „Rauchverbot“.",false],
+["schützen","vor","D","защищать от","to protect from","Schützen Sie Kinder [vor] Tabakrauch!",true],
+["sorgen","für","A","заботиться о, обеспечивать","to provide for, to ensure","Bitte sorgen Sie in Ihrer Wohnung [für] gute Belüftung.",true],
+["sprechen","mit","D","говорить (с кем)","to talk to/with","Gestern hat Oskar [mit] seiner Frau über ein neues Auto gesprochen.",false],
+["sprechen","über","A","говорить (о чём)","to talk about","Gestern hat Oskar mit seiner Frau [über] ein neues Auto gesprochen.",true],
+["sterben","an","D","умереть от","to die of","Er ist [an] einem Herzinfarkt gestorben.",true],
+["streiken","für","A","бастовать за","to strike for","Die Arbeiter streiken [für] bessere Arbeitsbedingungen.",true],
+["sich streiten","mit","D","ссориться (с кем)","to argue with","Sie streitet sich immer [mit] ihrer kleinen Schwester um eine Puppe.",true],
+["sich streiten","um","A","ссориться (из-за чего)","to argue about/over","Sie streitet sich immer mit ihrer kleinen Schwester [um] eine Puppe.",true],
+];
+const defaults = () => DEFAULT_RAW.map(([verb, prep, cas, ru, en, sent, on]) =>
+  ({ id: "d_" + verb.replace(/\s+/g, "_") + "_" + prep, verb, prep, cas, ru, en, sent, on }));
+
+const BASE_PREPS = ["an","auf","aus","bei","durch","für","gegen","in","mit","nach","über","um","unter","von","vor","zu"];
+const CONTR = ["vom","zum","beim","am","im","zur","ins","ans","aufs"];
+const TWOWAY = ["an","auf","in","über","unter","vor","hinter","neben","zwischen"];
+
+// ================= Хранилище (безопасно) =================
+const store = {
+  get(k, def) { try { const v = localStorage.getItem(k); return v == null ? def : JSON.parse(v); } catch { return def; } },
+  set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} },
+};
+const K_WORDS = "vmp_words_v2", K_PROG = "vmp_progress_v2", K_LANG = "vmp_lang", K_THEME = "vmp_theme";
+
+let ITEMS = store.get(K_WORDS, null) || defaults();
+let P = store.get(K_PROG, {});
+const saveWords = () => store.set(K_WORDS, ITEMS);
+const prog = id => P[id] || (P[id] = { lvl: 0, seen: 0, ok: 0 });
+const saveProg = () => store.set(K_PROG, P);
+let session = { ok: 0, total: 0, streak: 0 };
+let recent = [];
+
+// ================= Язык интерфейса =================
+const I18N = {
+  ru: {
+    train: "Тренировка", list: "Список", session: "Сессия", learned: "Выучено", next: "Дальше →",
+    keyHint: "Enter — проверить / дальше · клавиши 1–4 — варианты",
+    t_ruToDe: "Перевод → немецкий", t_verbToPrep: "Какой предлог?", t_gapChoice: "Вставь предлог",
+    t_caseChoice: "Какой падеж?", t_gapType: "Напиши предлог", t_ruType: "Напиши глагол + предлог",
+    ruTypeHint: "например: hoffen auf (sich можно не писать)", placeholder: "Ответ + Enter",
+    correct: "✅ Верно!", wrongIs: "❌ Правильно:",
+    notEnough: "Для тренировки нужно хотя бы 2 активных слова. Перейдите в «Список» и отметьте или добавьте слова.",
+    search: "Поиск…", add: "Добавить слово", words: "слов", active: "активно",
+    export: "⬇ Экспорт", import: "⬆ Импорт", resetProg: "Сбросить прогресс", resetWords: "Вернуть стандартный список",
+    confirmProg: "Сбросить весь прогресс?", confirmWords: "Заменить ваш список стандартным? Все ваши изменения будут потеряны.",
+    confirmDel: "Удалить «{w}»?", edit: "Изменить", del: "Удалить", toggle: "Включить/выключить в тренировке",
+    addTitle: "Новое слово", editTitle: "Редактировать слово", save: "Сохранить", cancel: "Отмена",
+    fVerb: "Глагол (Verb)", fPrep: "Präposition", fCase: "Kasus", fRu: "Перевод (русский)", fEn: "Перевод (английский)",
+    fSent: "Beispielsatz", sentHelp: "Возьмите предлог в [квадратные скобки] — это будет пропуск. Если скобок нет, предлог найдётся автоматически.",
+    errTrans: "Укажите хотя бы один перевод.", errDup: "Такое слово с этим предлогом уже есть.",
+    nothing: "Ничего не найдено.", importOk: "Импортировано слов: {n}", importBad: "Не удалось прочитать файл.",
+    noTrans: "(без перевода)", themeLight: "Светлая тема", themeDark: "Тёмная тема",
+  },
+  en: {
+    train: "Practice", list: "Word list", session: "Session", learned: "Learned", next: "Next →",
+    keyHint: "Enter — check / next · keys 1–4 — options",
+    t_ruToDe: "Translation → German", t_verbToPrep: "Which preposition?", t_gapChoice: "Fill in the preposition",
+    t_caseChoice: "Which case?", t_gapType: "Type the preposition", t_ruType: "Type verb + preposition",
+    ruTypeHint: "e.g.: hoffen auf (you can skip “sich”)", placeholder: "Answer + Enter",
+    correct: "✅ Correct!", wrongIs: "❌ Correct answer:",
+    notEnough: "You need at least 2 active words to practice. Go to “Word list” and enable or add words.",
+    search: "Search…", add: "Add word", words: "words", active: "active",
+    export: "⬇ Export", import: "⬆ Import", resetProg: "Reset progress", resetWords: "Restore default list",
+    confirmProg: "Reset all progress?", confirmWords: "Replace your list with the default one? All your changes will be lost.",
+    confirmDel: "Delete “{w}”?", edit: "Edit", del: "Delete", toggle: "Include/exclude from practice",
+    addTitle: "New word", editTitle: "Edit word", save: "Save", cancel: "Cancel",
+    fVerb: "Verb", fPrep: "Präposition", fCase: "Kasus", fRu: "Translation (Russian)", fEn: "Translation (English)",
+    fSent: "Beispielsatz", sentHelp: "Put the preposition in [square brackets] — that becomes the gap. Without brackets it is found automatically.",
+    errTrans: "Enter at least one translation.", errDup: "This verb with this preposition already exists.",
+    nothing: "Nothing found.", importOk: "Imported words: {n}", importBad: "Could not read the file.",
+    noTrans: "(no translation)", themeLight: "Light theme", themeDark: "Dark theme",
+  },
+};
+let lang = store.get(K_LANG, "ru");
+const t = (k, vars) => { let s = (I18N[lang] || I18N.ru)[k] ?? k; if (vars) for (const v in vars) s = s.replace(`{${v}}`, vars[v]); return s; };
+const tr = it => (lang === "en" ? (it.en || it.ru) : (it.ru || it.en)) || t("noTrans");
+
+// ================= Тема =================
+let theme = store.get(K_THEME, null) ||
+  (window.matchMedia && matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
+function applyTheme() {
+  document.documentElement.dataset.theme = theme;
+  const b = document.getElementById("themeBtn");
+  b.textContent = theme === "dark" ? "☀️" : "🌙";
+  b.title = theme === "dark" ? t("themeLight") : t("themeDark");
+}
+
+// ================= Утилиты =================
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const shuffle = a => { a = a.slice(); for (let i = a.length - 1; i > 0; i--) { const j = Math.random() * (i + 1) | 0; [a[i], a[j]] = [a[j], a[i]]; } return a; };
+const uniq = a => [...new Set(a)];
+const label = it => `${it.verb} ${it.prep} + ${it.cas === "A" ? "Akk" : "Dat"}`;
+const norm = s => s.toLowerCase().replace(/\bsich\b/g, "").replace(/[+]|akk|dat|\b[ad]\b/g, "").replace(/\s+/g, " ").trim();
+const sentHTML = it => esc(it.sent).replace(/\[(.+?)\]/, "<b>$1</b>");
+const active = () => ITEMS.filter(x => x.on !== false);
+const allPreps = () => uniq([...BASE_PREPS, ...ITEMS.map(x => x.prep.toLowerCase())]);
+const uid = () => "u_" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+
+// Если в предложении нет [ ], пытаемся найти предлог сами
+function markGap(sent, prep) {
+  if (!sent || /\[.+?\]/.test(sent)) return sent;
+  const cands = [prep, ...CONTR.filter(c => c.startsWith(prep.slice(0, 1)) && c.length <= prep.length + 2)];
+  for (const c of cands) {
+    const re = new RegExp(`(^|[^\\p{L}])(${c})(?=[^\\p{L}]|$)`, "iu");
+    if (re.test(sent)) return sent.replace(re, "$1[$2]");
+  }
+  return sent;
+}
+
+// ================= Тренировка =================
+function pickItem() {
+  const act = active();
+  let pool = act.filter(it => !recent.includes(it.id));
+  if (!pool.length) pool = act;
+  const weights = pool.map(it => { const p = prog(it.id); return p.seen === 0 ? 6 : Math.pow(2, 5 - Math.min(p.lvl, 5)); });
+  let r = Math.random() * weights.reduce((a, b) => a + b, 0);
+  for (let i = 0; i < pool.length; i++) { r -= weights[i]; if (r <= 0) return pool[i]; }
+  return pool[0];
+}
+
+function gapParts(it) {
+  const m = (it.sent || "").match(/^(.*?)\[(.+?)\](.*)$/);
+  return m ? { before: m[1], ans: m[2], after: m[3] } : null;
+}
+
+function prepDistractors(correct, n) {
+  const low = correct.toLowerCase();
+  const base = CONTR.includes(low) ? CONTR : allPreps();
+  const res = shuffle(base.filter(p => p !== low)).slice(0, n);
+  const cap = correct[0] !== correct[0].toLowerCase();
+  return res.map(p => cap ? p[0].toUpperCase() + p.slice(1) : p);
+}
+
+const TASKS = {
+  ruToDe(it) {
+    const right = `${it.verb} ${it.prep}`;
+    const same = ITEMS.filter(x => x.verb === it.verb);
+    const fakes = shuffle(allPreps().filter(p => !same.some(s => s.prep === p))).slice(0, 2).map(p => `${it.verb} ${p}`);
+    const others = shuffle(active().filter(x => x.verb !== it.verb)).slice(0, 3).map(x => `${x.verb} ${x.prep}`);
+    const wrong = uniq(shuffle([...fakes, ...others])).filter(o => o !== right).slice(0, 3);
+    return { q: `«${esc(tr(it))}»`, opts: shuffle([right, ...wrong]), ans: right };
+  },
+  verbToPrep(it) {
+    return { q: `<b>${esc(it.verb)}</b> <span class="gap">?</span>`, hint: tr(it),
+      opts: shuffle([it.prep, ...prepDistractors(it.prep, 3)]), ans: it.prep };
+  },
+  gapChoice(it) {
+    const g = gapParts(it);
+    return { q: `${esc(g.before)}<span class="gap">___</span>${esc(g.after)}`,
+      opts: shuffle([g.ans, ...prepDistractors(g.ans, 3)]), ans: g.ans };
+  },
+  caseChoice(it) {
+    return { q: `<b>${esc(it.verb)} ${esc(it.prep)}</b> + <span class="gap">?</span>`, hint: tr(it),
+      opts: ["Akkusativ", "Dativ"], ans: it.cas === "A" ? "Akkusativ" : "Dativ" };
+  },
+  gapType(it) {
+    const g = gapParts(it);
+    return { q: `${esc(g.before)}<span class="gap">___</span>${esc(g.after)}`, hint: tr(it),
+      input: true, check: v => v.trim().toLowerCase() === g.ans.toLowerCase(), ans: g.ans };
+  },
+  ruType(it) {
+    return { q: `«${esc(tr(it))}»`, hint: t("ruTypeHint"),
+      input: true, check: v => norm(v) === norm(`${it.verb} ${it.prep}`), ans: `${it.verb} ${it.prep}` };
+  },
+};
+
+function pickTask(it) {
+  const lvl = prog(it.id).lvl;
+  let list;
+  if (lvl <= 1) list = ["ruToDe", "verbToPrep", "gapChoice"];
+  else if (lvl <= 3) list = ["verbToPrep", "gapChoice", "gapType", "ruType", "ruToDe"];
+  else list = ["gapType", "ruType", "ruType", "gapType"];
+  if (!gapParts(it)) list = list.filter(x => !x.startsWith("gap"));
+  if (!it.ru && !it.en) list = list.filter(x => x !== "ruToDe" && x !== "ruType");
+  if (!list.length) list = ["verbToPrep"];
+  if (TWOWAY.includes(it.prep.toLowerCase()) && Math.random() < 0.3) return "caseChoice";
+  return list[Math.random() * list.length | 0];
+}
+
+const app = document.getElementById("app");
+let current = null;
+
+function renderTrain() {
+  const act = active();
+  if (act.length < 2) { current = null; app.innerHTML = `<div class="card empty">${t("notEnough")}</div>`; return; }
+  const it = pickItem();
+  recent.push(it.id);
+  while (recent.length > Math.min(8, act.length - 1)) recent.shift();
+  const kind = pickTask(it);
+  const task = TASKS[kind](it);
+  current = { it, t: task, done: false };
+  const learned = act.filter(x => prog(x.id).lvl >= 4).length;
+
+  app.innerHTML = `
+    <div class="stats"><span>${t("session")}: ${session.ok}/${session.total} · 🔥${session.streak}</span>
+      <span>${t("learned")}: ${learned}/${act.length}</span></div>
+    <div class="card">
+      <div class="type">${t("t_" + kind)}</div>
+      <div class="q">${task.q}</div>
+      ${task.hint ? `<div class="hint">${esc(task.hint)}</div>` : ""}
+      ${task.input
+        ? `<input type="text" id="inp" autocomplete="off" autocapitalize="off" spellcheck="false" placeholder="${t("placeholder")}">`
+        : `<div class="opts">${task.opts.map(o => `<button data-v="${esc(o)}">${esc(o)}</button>`).join("")}</div>`}
+      <div class="fb" id="fb"></div>
+      <button class="next" id="next">${t("next")}</button>
+    </div>
+    <div class="key">${t("keyHint")}</div>`;
+
+  if (task.input) document.getElementById("inp").focus();
+  else app.querySelectorAll(".opts button").forEach(b => b.onclick = () => answer(b.dataset.v, b));
+  document.getElementById("next").onclick = renderTrain;
+}
+
+function answer(val, btn) {
+  if (current.done) return;
+  current.done = true;
+  const { it, t: task } = current;
+  const ok = task.input ? task.check(val) : val === task.ans;
+  const p = prog(it.id);
+  p.seen++;
+  if (ok) { p.ok++; p.lvl = Math.min(p.lvl + 1, 6); session.ok++; session.streak++; }
+  else { p.lvl = Math.max(p.lvl - 2, 0); session.streak = 0; recent = recent.filter(x => x !== it.id); recent.splice(-3); }
+  session.total++;
+  saveProg();
+
+  if (task.input) document.getElementById("inp").className = ok ? "ok" : "bad";
+  else app.querySelectorAll(".opts button").forEach(b => {
+    b.disabled = true;
+    if (b.dataset.v === task.ans) b.classList.add("ok");
+    else if (b === btn) b.classList.add("bad");
+  });
+
+  const fb = document.getElementById("fb");
+  fb.className = "fb " + (ok ? "ok" : "bad");
+  fb.innerHTML = `${ok ? t("correct") : `${t("wrongIs")} <b>${esc(task.ans)}</b>`}<br>
+    <b>${esc(label(it))}</b> — ${esc(tr(it))}${it.sent ? `<br><i>${sentHTML(it)}</i>` : ""}`;
+  const next = document.getElementById("next");
+  next.style.display = "block";
+  if (!task.input) next.focus();
+}
+
+document.addEventListener("keydown", e => {
+  if (!current || app.dataset.view !== "train" || document.getElementById("dlg").open) return;
+  if (e.key === "Enter") {
+    if (current.done) { e.preventDefault(); renderTrain(); }
+    else if (current.t.input) { const v = document.getElementById("inp").value; if (v.trim()) answer(v); }
+  } else if (!current.done && !current.t.input && /^[1-4]$/.test(e.key)) {
+    const b = app.querySelectorAll(".opts button")[+e.key - 1];
+    if (b) answer(b.dataset.v, b);
+  }
+});
+
+// ================= Список и редактирование =================
+let query = "";
+
+function renderList() {
+  current = null;
+  const q = query.trim().toLowerCase();
+  const shown = ITEMS.filter(it => !q || [it.verb, it.prep, it.ru, it.en, it.sent].some(s => (s || "").toLowerCase().includes(q)));
+  const rows = shown.map(it => {
+    const p = prog(it.id);
+    return `<div class="row ${it.on === false ? "off" : ""}" data-id="${esc(it.id)}">
+      <input type="checkbox" data-act="toggle" title="${t("toggle")}" ${it.on !== false ? "checked" : ""}>
+      <div>
+        <div class="w">${esc(label(it))}</div>
+        <div class="tr">${esc(tr(it))}</div>
+        ${it.sent ? `<div class="ex">${sentHTML(it)}</div>` : ""}
+      </div>
+      <div class="prog"><span class="lvl"><i style="width:${Math.min(p.lvl, 4) / 4 * 100}%"></i></span><br>${p.ok}/${p.seen}</div>
+      <div class="acts">
+        <button data-act="edit" title="${t("edit")}">✏️</button>
+        <button data-act="del" title="${t("del")}">🗑️</button>
+      </div>
+    </div>`;
+  }).join("");
+
+  app.innerHTML = `
+    <div class="toolbar">
+      <button class="btn primary plus" id="addBtn" title="${t("add")}">+</button>
+      <input type="search" id="search" placeholder="${t("search")}" value="${esc(query)}">
+      <span class="count">${ITEMS.length} ${t("words")} · ${active().length} ${t("active")}</span>
+    </div>
+    <div class="words">${rows || `<div class="empty">${t("nothing")}</div>`}</div>
+    <div class="footer-acts">
+      <button class="btn" id="exportBtn">${t("export")}</button>
+      <button class="btn" id="importBtn">${t("import")}</button>
+      <button class="btn danger" id="resetProg">${t("resetProg")}</button>
+      <button class="btn danger" id="resetWords">${t("resetWords")}</button>
+    </div>`;
+
+  const s = document.getElementById("search");
+  s.oninput = () => { query = s.value; const pos = s.selectionStart; renderList(); const n = document.getElementById("search"); n.focus(); n.setSelectionRange(pos, pos); };
+  document.getElementById("addBtn").onclick = () => openForm(null);
+  document.getElementById("exportBtn").onclick = exportWords;
+  document.getElementById("importBtn").onclick = () => document.getElementById("importFile").click();
+  document.getElementById("resetProg").onclick = () => { if (confirm(t("confirmProg"))) { P = {}; saveProg(); renderList(); } };
+  document.getElementById("resetWords").onclick = () => { if (confirm(t("confirmWords"))) { ITEMS = defaults(); saveWords(); renderList(); } };
+
+  app.querySelectorAll(".row").forEach(row => {
+    const it = ITEMS.find(x => x.id === row.dataset.id);
+    row.querySelector("[data-act=toggle]").onchange = e => { it.on = e.target.checked; saveWords(); renderList(); };
+    row.querySelector("[data-act=edit]").onclick = () => openForm(it);
+    row.querySelector("[data-act=del]").onclick = () => {
+      if (confirm(t("confirmDel", { w: label(it) }))) { ITEMS = ITEMS.filter(x => x !== it); delete P[it.id]; saveWords(); saveProg(); renderList(); }
+    };
+  });
+}
+
+// ---- форма ----
+const dlg = document.getElementById("dlg");
+const form = document.getElementById("form");
+let editing = null;
+
+function openForm(it) {
+  editing = it;
+  document.getElementById("dlgTitle").textContent = t(it ? "editTitle" : "addTitle");
+  document.getElementById("formErr").textContent = "";
+  document.getElementById("prepList").innerHTML = allPreps().map(p => `<option value="${esc(p)}">`).join("");
+  form.verb.value = it?.verb || "";
+  form.prep.value = it?.prep || "";
+  form.cas.value = it?.cas || "A";
+  form.ru.value = it?.ru || "";
+  form.en.value = it?.en || "";
+  form.sent.value = it?.sent || "";
+  dlg.showModal();
+  form.verb.focus();
+}
+
+form.onsubmit = e => {
+  e.preventDefault();
+  const v = {
+    verb: form.verb.value.trim().replace(/\s+/g, " "),
+    prep: form.prep.value.trim().toLowerCase(),
+    cas: form.cas.value,
+    ru: form.ru.value.trim(),
+    en: form.en.value.trim(),
+  };
+  v.sent = markGap(form.sent.value.trim(), v.prep);
+  const err = document.getElementById("formErr");
+  if (!v.verb || !v.prep) return;
+  if (!v.ru && !v.en) { err.textContent = t("errTrans"); return; }
+  if (ITEMS.some(x => x !== editing && x.verb.toLowerCase() === v.verb.toLowerCase() && x.prep.toLowerCase() === v.prep)) { err.textContent = t("errDup"); return; }
+  if (editing) Object.assign(editing, v);
+  else ITEMS.unshift({ id: uid(), ...v, on: true });
+  saveWords();
+  dlg.close();
+  renderList();
+};
+document.getElementById("dlgCancel").onclick = () => dlg.close();
+
+// ---- экспорт / импорт ----
+function exportWords() {
+  const blob = new Blob([JSON.stringify(ITEMS, null, 2)], { type: "application/json" });
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = "verben-praepositionen.json";
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+}
+document.getElementById("importFile").onchange = async e => {
+  const f = e.target.files[0]; e.target.value = "";
+  if (!f) return;
+  try {
+    const data = JSON.parse(await f.text());
+    if (!Array.isArray(data)) throw 0;
+    const list = data.filter(x => x && x.verb && x.prep).map(x => ({
+      id: x.id || uid(), verb: String(x.verb), prep: String(x.prep), cas: x.cas === "D" ? "D" : "A",
+      ru: String(x.ru || ""), en: String(x.en || ""), sent: markGap(String(x.sent || ""), String(x.prep)), on: x.on !== false,
+    }));
+    if (!list.length) throw 0;
+    ITEMS = list; saveWords(); renderList();
+    alert(t("importOk", { n: list.length }));
+  } catch { alert(t("importBad")); }
+};
+
+// ================= Навигация, язык, тема =================
+function applyLang() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i18n]").forEach(el => el.textContent = t(el.dataset.i18n));
+  document.getElementById("langRu").classList.toggle("active", lang === "ru");
+  document.getElementById("langEn").classList.toggle("active", lang === "en");
+  applyTheme();
+}
+function setLang(l) {
+  lang = l; store.set(K_LANG, l); applyLang();
+  if (app.dataset.view === "list") renderList();
+  else if (current && !current.done) show("train");     // новое задание на новом языке
+  else if (current && current.done) renderTrain();
+  else show("train");
+}
+
+function show(view) {
+  app.dataset.view = view;
+  document.getElementById("btnTrain").classList.toggle("active", view === "train");
+  document.getElementById("btnList").classList.toggle("active", view === "list");
+  view === "train" ? renderTrain() : renderList();
+}
+document.getElementById("btnTrain").onclick = () => show("train");
+document.getElementById("btnList").onclick = () => show("list");
+document.getElementById("langRu").onclick = () => setLang("ru");
+document.getElementById("langEn").onclick = () => setLang("en");
+document.getElementById("themeBtn").onclick = () => { theme = theme === "dark" ? "light" : "dark"; store.set(K_THEME, theme); applyTheme(); };
+
+applyLang();
+show("train");
+</script>
+</body>
+</html>
